@@ -1,0 +1,6 @@
+???
+Low Risk
+Medium Risk
+High Risk
+Severe Risk
+No Ulcer

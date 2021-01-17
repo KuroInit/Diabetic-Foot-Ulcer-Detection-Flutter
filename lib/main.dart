@@ -108,16 +108,21 @@ class _TfliteHomeState extends State<TfliteHome> {
   List<dynamic> saveToList(List<dynamic> recog) {
     if (recog == null) return [];
     List<dynamic> saveToList = [];
+    List<String> errList = ["No predictions"];
     recog
         .map((e) => {
               if (e["confidenceInClass"] > 0.75)
                 {
                   saveToList.add(e["detectedClass"]),
-                  saveToList.add("Confidence Rate : " +
-                      "${(e["confidenceInClass"] * 100).toStringAsFixed(0)}%")
+                  saveToList.add(
+                      "Confidence rate: ${(e["confidenceInClass"] * 100).toStringAsFixed(0)}" +
+                          "%")
                 }
             })
         .toList();
+    if (saveToList == null) {
+      return errList;
+    }
     return saveToList;
   }
 
@@ -178,17 +183,43 @@ class _TfliteHomeState extends State<TfliteHome> {
                 padding: const EdgeInsets.all(5),
                 itemCount: _recognitions == null ? 0 : _recognitions.length,
                 itemBuilder: (BuildContext context, int index) {
+                  Color ulcer = Colors.indigo[400];
+                  Color font = Colors.white;
+                  var element = _recognitions[index].toString();
+                  if ((element == "No Ulcer") ||
+                      (element == "High Risk") ||
+                      (element == "Medium Risk") ||
+                      (element == "Low Risk") ||
+                      (element == "Severe Risk")) {
+                    switch (element) {
+                      case "No Ulcer":
+                        ulcer = Colors.green[700];
+                        break;
+                      case "High Risk":
+                        ulcer = Colors.red;
+                        break;
+                      case "Medium Risk":
+                        ulcer = Colors.orange[700];
+                        break;
+                      case "Low Risk":
+                        ulcer = Colors.yellow[400];
+                        font = Colors.black;
+                        break;
+                      case "Severe Risk":
+                        ulcer = Colors.red[700];
+                        break;
+                    }
+                  }
                   return Container(
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: _recognitions[index] == "No Ulcer"
-                            ? Colors.green[700]
-                            : Colors.red[700]),
+                      borderRadius: BorderRadius.circular(15),
+                      color: ulcer,
+                    ),
                     height: 35,
                     child: Center(
                       child: Text(
                         "${_recognitions[index]}",
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: font),
                       ),
                     ),
                   );

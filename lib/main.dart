@@ -29,6 +29,7 @@ class _TfliteHomeState extends State<TfliteHome> {
   bool _busy = false;
 
   List _recognitions;
+  List records;
 
   @override
   void initState() {
@@ -100,57 +101,24 @@ class _TfliteHomeState extends State<TfliteHome> {
         asynch: true);
 
     setState(() {
-      _recognitions = recognitions;
+      _recognitions = saveToList(recognitions);
     });
-
-    print(_recognitions.toString());
   }
 
-  List<Widget> predictions() {
-    if (_recognitions == null) return [];
-    return _recognitions.map((e) {
-      return Container(
-          margin: EdgeInsets.all(5),
-          width: MediaQuery.of(context).size.width - 25,
-          constraints: BoxConstraints(maxHeight: 250),
-          child: ((e["confidenceInClass"] > 0.75))
-              ? Container(
-                  height: 30,
-                  decoration: BoxDecoration(
-                      color: e["detectedClass"] == "No Ulcer"
-                          ? Colors.green
-                          : Colors.red[400],
-                      borderRadius: BorderRadius.circular(15)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        "${e["detectedClass"]} : ${(e["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              : Container(
-                  height: 30,
-                  decoration: BoxDecoration(
-                      color: e["detectedClass"] == "No Ulcer"
-                          ? Colors.green
-                          : Colors.red[400],
-                      borderRadius: BorderRadius.circular(15)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        "${e["detectedClass"]} : ${(e["confidenceInClass"] * 100).toStringAsFixed(0)}%",
-                        style: TextStyle(color: Colors.white),
-                      )
-                    ],
-                  ),
-                ));
-    }).toList();
+  List<dynamic> saveToList(List<dynamic> recog) {
+    if (recog == null) return [];
+    List<dynamic> saveToList = [];
+    recog
+        .map((e) => {
+              if (e["confidenceInClass"] > 0.75)
+                {
+                  saveToList.add(e["detectedClass"]),
+                  saveToList.add("Confidence Rate : " +
+                      "${(e["confidenceInClass"] * 100).toStringAsFixed(0)}%")
+                }
+            })
+        .toList();
+    return saveToList;
   }
 
   @override
@@ -203,8 +171,30 @@ class _TfliteHomeState extends State<TfliteHome> {
                   )
                 : Text("Predictions", style: TextStyle(fontSize: 20)),
           ),
-          Column(
-            children: predictions(),
+          Container(
+            constraints: BoxConstraints(maxHeight: 100),
+            //decoration: BoxDecoration(color: Colors.black),
+            child: ListView.separated(
+                padding: const EdgeInsets.all(5),
+                itemCount: _recognitions == null ? 0 : _recognitions.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: _recognitions[index] == "No Ulcer"
+                            ? Colors.green[700]
+                            : Colors.red[700]),
+                    height: 35,
+                    child: Center(
+                      child: Text(
+                        "${_recognitions[index]}",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider()),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -279,6 +269,16 @@ class _TfliteHomeState extends State<TfliteHome> {
                     ]),
               )
             ],
+          ),
+          Container(
+            child: ElevatedButton.icon(
+              icon: Icon(Icons.storage),
+              label: Text("View Records"),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.indigo[400],
+              ),
+              onPressed: () => {},
+            ),
           )
         ],
       )),

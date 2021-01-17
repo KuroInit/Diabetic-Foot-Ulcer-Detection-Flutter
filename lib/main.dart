@@ -120,7 +120,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                 }
             })
         .toList();
-    if (saveToList == null) {
+    if (saveToList == null || saveToList.length == 0) {
       return errList;
     }
     return saveToList;

@@ -35,7 +35,6 @@ class _TfliteHomeState extends State<TfliteHome> {
 
   List _recognitions;
   Map<String, String> records = {};
-  Map<String, String> newMethod = {};
   SharedPreferences sharedPreferences;
   List<Detection> _record = [];
 
@@ -125,7 +124,7 @@ class _TfliteHomeState extends State<TfliteHome> {
     recog
         .map((e) => {
               if (e["confidenceInClass"] >
-                  0.55) //Change this value to increase sensitivity
+                  0.70) //Change this value to increase sensitivity
                 {
                   saveToList.add(e["detectedClass"]),
                   saveToList.add(
@@ -139,22 +138,8 @@ class _TfliteHomeState extends State<TfliteHome> {
       return errList;
     }
 
-    for (int i = 0; i < saveToList.length; i++) {
-      if (i == 0 || i % 2 == 0) {
-        var item = {"class": saveToList[i].toString()};
-        records.addAll(item);
-      } else {
-        var item = {"confidence": saveToList[i].toString()};
-        records.addAll(item);
-      }
-    }
-
-    // for (int i = 0; i < saveToList.length; i + 2) {
-    //   var item = {saveToList[i].toString(): saveToList[i + 1].toString()};
-    //   newMethod.addAll(item);
-    // }
-
-    // print(newMethod);
+    var item = {saveToList[0].toString(): saveToList[1].toString()};
+    records.addAll(item);
 
     if (records != null) {
       saveData(records);
@@ -164,6 +149,7 @@ class _TfliteHomeState extends State<TfliteHome> {
   }
 
   void saveData(Map<String, String> map) {
+    _record = [];
     map.forEach((k, v) => _record.add(Detection(k, v)));
     var saved = _record.map((e) => json.encode(e.toMap())).toList();
     sharedPreferences.setStringList("userRecord", saved);

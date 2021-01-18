@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,7 @@ class _userRecordsState extends State<userRecords> {
   @override
   void initState() {
     sPInit();
+    sPRefresh();
     super.initState();
   }
 
@@ -38,6 +40,17 @@ class _userRecordsState extends State<userRecords> {
     await sharedPreferences.remove('userRecord');
     _local = [];
     setState(() {});
+  }
+
+  sPRefresh() async {
+    _local = [];
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var s = pref.getStringList('userRecord');
+    var list = s.map((e) => Detection.fromMap(json.decode(e))).toList();
+
+    setState(() {
+      _local = list;
+    });
   }
 
   @override
@@ -62,11 +75,11 @@ class _userRecordsState extends State<userRecords> {
       body: SafeArea(
           child: Column(
         children: [
-          FlatButton(
-            onPressed: sPClear,
-            child: Text("Clear"),
-            color: Colors.red,
-          ),
+          // FlatButton(
+          //   onPressed: sPClear,
+          //   child: Text("Clear"),
+          //   color: Colors.red,
+          // ),
           Container(
             child: Flexible(
               child: Container(
@@ -79,46 +92,50 @@ class _userRecordsState extends State<userRecords> {
                     Icon tile;
                     Color data = Colors.indigo[400];
                     if (index != 0) {
-                      switch (_local[index].detection) {
-                        case "No Ulcer":
-                          newPoint = 5;
-                          break;
-                        case "High Risk":
-                          newPoint = 2;
-                          break;
-                        case "Medium Risk":
-                          newPoint = 3;
-                          break;
-                        case "Low Risk":
-                          newPoint = 4;
-                          break;
-                        case "Severe Risk":
-                          newPoint = 1;
-                          break;
+                      if (_local[index].detection.contains(
+                          new RegExp(r'No Ulcer', caseSensitive: false))) {
+                        newPoint = 5;
+                      } else if (_local[index].detection.contains(
+                          new RegExp(r'Low Risk', caseSensitive: false))) {
+                        newPoint = 4;
+                      } else if (_local[index].detection.contains(
+                          new RegExp(r'Medium Risk', caseSensitive: false))) {
+                        newPoint = 3;
+                      } else if (_local[index].detection.contains(
+                          new RegExp(r'High Risk', caseSensitive: false))) {
+                        newPoint = 2;
+                      } else if (_local[index].detection.contains(
+                          new RegExp(r'Severe Risk', caseSensitive: false))) {
+                        newPoint = 1;
                       }
 
-                      switch (_local[index - 1].detection) {
-                        case "No Ulcer":
-                          point = 5;
-                          break;
-                        case "High Risk":
-                          point = 2;
-                          break;
-                        case "Medium Risk":
-                          point = 3;
-                          break;
-                        case "Low Risk":
-                          point = 4;
-                          break;
-                        case "Severe Risk":
-                          point = 1;
-                          break;
+                      if (_local[index - 1].detection.contains(
+                          new RegExp(r'No Ulcer', caseSensitive: false))) {
+                        point = 5;
+                      } else if (_local[index - 1].detection.contains(
+                          new RegExp(r'Low Risk', caseSensitive: false))) {
+                        point = 4;
+                      } else if (_local[index - 1].detection.contains(
+                          new RegExp(r'Medium Risk', caseSensitive: false))) {
+                        point = 3;
+                      } else if (_local[index - 1].detection.contains(
+                          new RegExp(r'High Risk', caseSensitive: false))) {
+                        point = 2;
+                      } else if (_local[index - 1].detection.contains(
+                          new RegExp(r'Severe Risk', caseSensitive: false))) {
+                        point = 1;
                       }
 
                       if (newPoint > point) {
                         tile = Icon(
                           Icons.arrow_circle_up,
                           color: Colors.green[700],
+                          size: 30,
+                        );
+                      } else if (newPoint == point) {
+                        tile = Icon(
+                          Icons.crop_square,
+                          color: Colors.orange[600],
                           size: 30,
                         );
                       } else {

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'record.dart';
+import 'package:intl/intl.dart';
 import 'detections.dart';
 import 'dart:io';
 
@@ -121,6 +122,9 @@ class _TfliteHomeState extends State<TfliteHome> {
     if (recog == null) return [];
     List<dynamic> saveToList = [];
     List<String> errList = ["No predictions"];
+    DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat.yMd().add_jms();
+    String formatted = formatter.format(now);
     recog
         .map((e) => {
               if (e["confidenceInClass"] >
@@ -138,7 +142,9 @@ class _TfliteHomeState extends State<TfliteHome> {
       return errList;
     }
 
-    var item = {saveToList[0].toString(): saveToList[1].toString()};
+    var item = {
+      saveToList[0].toString() + "\n\n" + formatted: saveToList[1].toString()
+    };
     records.addAll(item);
 
     if (records != null) {
@@ -342,17 +348,21 @@ class _TfliteHomeState extends State<TfliteHome> {
                     primary: Colors.indigo[400],
                   ),
                   onPressed: () {
-                    Navigator.of(context).pushNamed('/records');
+                    if (records != null) {
+                      Navigator.of(context).pushNamed('/records');
+                    } else {
+                      print("Not working");
+                    }
                   },
                 ),
               ),
-              Container(
-                  child: ElevatedButton.icon(
-                icon: Icon(Icons.delete),
-                label: Text("Delete"),
-                style: ElevatedButton.styleFrom(primary: Colors.red),
-                onPressed: () => {sharedPreferences.clear(), _record = []},
-              ))
+              // Container(
+              //     child: ElevatedButton.icon(
+              //   icon: Icon(Icons.delete),
+              //   label: Text("Delete"),
+              //   style: ElevatedButton.styleFrom(primary: Colors.red),
+              //   onPressed: () => {sharedPreferences.clear(), _record = []},
+              // ))
             ],
           )
         ],

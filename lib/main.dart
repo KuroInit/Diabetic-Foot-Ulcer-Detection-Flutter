@@ -3,6 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'record.dart';
+import 'detections.dart';
 import 'dart:io';
 
 void main() {
@@ -15,6 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: TfliteHome(),
+      routes: {'/records': (_) => userRecords()},
     );
   }
 }
@@ -29,10 +34,14 @@ class _TfliteHomeState extends State<TfliteHome> {
   bool _busy = false;
 
   List _recognitions;
-  List records;
+  Map<String, String> records = {};
+  Map<String, String> newMethod = {};
+  SharedPreferences sharedPreferences;
+  List<Detection> _record = [];
 
   @override
   void initState() {
+    initSharedPreferences();
     super.initState();
     _busy = true;
 
@@ -41,6 +50,10 @@ class _TfliteHomeState extends State<TfliteHome> {
         _busy = false;
       });
     });
+  }
+
+  initSharedPreferences() async {
+    sharedPreferences = await SharedPreferences.getInstance();
   }
 
   loadModel() async {
@@ -117,14 +130,43 @@ class _TfliteHomeState extends State<TfliteHome> {
                   saveToList.add(e["detectedClass"]),
                   saveToList.add(
                       "Confidence rate: ${(e["confidenceInClass"] * 100).toStringAsFixed(0)}" +
-                          "%")
+                          "%"),
                 }
             })
         .toList();
+
     if (saveToList == null || saveToList.length == 0) {
       return errList;
     }
+
+    for (int i = 0; i < saveToList.length; i++) {
+      if (i == 0 || i % 2 == 0) {
+        var item = {"class": saveToList[i].toString()};
+        records.addAll(item);
+      } else {
+        var item = {"confidence": saveToList[i].toString()};
+        records.addAll(item);
+      }
+    }
+
+    // for (int i = 0; i < saveToList.length; i + 2) {
+    //   var item = {saveToList[i].toString(): saveToList[i + 1].toString()};
+    //   newMethod.addAll(item);
+    // }
+
+    // print(newMethod);
+
+    if (records != null) {
+      saveData(records);
+    }
+
     return saveToList;
+  }
+
+  void saveData(Map<String, String> map) {
+    map.forEach((k, v) => _record.add(Detection(k, v)));
+    var saved = _record.map((e) => json.encode(e.toMap())).toList();
+    sharedPreferences.setStringList("userRecord", saved);
   }
 
   @override
@@ -178,7 +220,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                 : Text("Predictions", style: TextStyle(fontSize: 20)),
           ),
           Container(
-            constraints: BoxConstraints(maxHeight: 150),
+            constraints: BoxConstraints(maxHeight: 125),
             //decoration: BoxDecoration(color: Colors.black),
             child: ListView.separated(
                 padding: const EdgeInsets.all(5),
@@ -303,15 +345,29 @@ class _TfliteHomeState extends State<TfliteHome> {
               )
             ],
           ),
-          Container(
-            child: ElevatedButton.icon(
-              icon: Icon(Icons.storage),
-              label: Text("View Records"),
-              style: ElevatedButton.styleFrom(
-                primary: Colors.indigo[400],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.storage),
+                  label: Text("View Records"),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.indigo[400],
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/records');
+                  },
+                ),
               ),
-              onPressed: () => {},
-            ),
+              Container(
+                  child: ElevatedButton.icon(
+                icon: Icon(Icons.delete),
+                label: Text("Delete"),
+                style: ElevatedButton.styleFrom(primary: Colors.red),
+                onPressed: () => {sharedPreferences.clear(), _record = []},
+              ))
+            ],
           )
         ],
       )),

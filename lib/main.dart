@@ -111,7 +111,8 @@ class _TfliteHomeState extends State<TfliteHome> {
     List<String> errList = ["No predictions"];
     recog
         .map((e) => {
-              if (e["confidenceInClass"] > 0.75)
+              if (e["confidenceInClass"] >
+                  0.55) //Change this value to increase sensitivity
                 {
                   saveToList.add(e["detectedClass"]),
                   saveToList.add(
@@ -177,7 +178,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                 : Text("Predictions", style: TextStyle(fontSize: 20)),
           ),
           Container(
-            constraints: BoxConstraints(maxHeight: 100),
+            constraints: BoxConstraints(maxHeight: 150),
             //decoration: BoxDecoration(color: Colors.black),
             child: ListView.separated(
                 padding: const EdgeInsets.all(5),
@@ -211,6 +212,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                     }
                   }
                   return Container(
+                    margin: EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       color: ulcer,

@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: TfliteHome(),
-      routes: {'/records': (_) => userRecords()},
+      routes: {'/records': (_) => UserRecords()},
     );
   }
 }
@@ -54,6 +54,10 @@ class _TfliteHomeState extends State<TfliteHome> {
 
   initSharedPreferences() async {
     sharedPreferences = await SharedPreferences.getInstance();
+    var s = sharedPreferences.getStringList('userRecord');
+    if (s != null) {
+      _record = s.map((e) => Detection.fromMap(json.decode(e))).toList();
+    }
   }
 
   loadModel() async {
@@ -155,10 +159,11 @@ class _TfliteHomeState extends State<TfliteHome> {
   }
 
   void saveData(Map<String, String> map) {
-    _record = [];
+    //_record = [];
     map.forEach((k, v) => _record.add(Detection(k, v)));
     var saved = _record.map((e) => json.encode(e.toMap())).toList();
     sharedPreferences.setStringList("userRecord", saved);
+    _record = [];
   }
 
   @override
@@ -214,54 +219,58 @@ class _TfliteHomeState extends State<TfliteHome> {
           Container(
             constraints: BoxConstraints(maxHeight: 125),
             //decoration: BoxDecoration(color: Colors.black),
-            child: ListView.separated(
-                padding: const EdgeInsets.all(5),
-                itemCount: _recognitions == null ? 0 : _recognitions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Color ulcer = Colors.indigo[400];
-                  Color font = Colors.white;
-                  var element = _recognitions[index].toString();
-                  if ((element == "No Ulcer") ||
-                      (element == "High Risk") ||
-                      (element == "Medium Risk") ||
-                      (element == "Low Risk") ||
-                      (element == "Severe Risk")) {
-                    switch (element) {
-                      case "No Ulcer":
-                        ulcer = Colors.green[700];
-                        break;
-                      case "High Risk":
-                        ulcer = Colors.red;
-                        break;
-                      case "Medium Risk":
-                        ulcer = Colors.orange[700];
-                        break;
-                      case "Low Risk":
-                        ulcer = Colors.yellow[400];
-                        font = Colors.black;
-                        break;
-                      case "Severe Risk":
-                        ulcer = Colors.red[700];
-                        break;
-                    }
-                  }
-                  return Container(
-                    margin: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: ulcer,
-                    ),
-                    height: 35,
-                    child: Center(
-                      child: Text(
-                        "${_recognitions[index]}",
-                        style: TextStyle(color: font),
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) =>
-                    const Divider()),
+            child: _recognitions == null
+                ? Container(
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    child: Center(child: Text("Predictions will Appear here")))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(5),
+                    itemCount: _recognitions == null ? 0 : _recognitions.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      Color ulcer = Colors.indigo[400];
+                      Color font = Colors.white;
+                      var element = _recognitions[index].toString();
+                      if ((element == "No Ulcer") ||
+                          (element == "High Risk") ||
+                          (element == "Medium Risk") ||
+                          (element == "Low Risk") ||
+                          (element == "Severe Risk")) {
+                        switch (element) {
+                          case "No Ulcer":
+                            ulcer = Colors.green[700];
+                            break;
+                          case "High Risk":
+                            ulcer = Colors.red;
+                            break;
+                          case "Medium Risk":
+                            ulcer = Colors.orange[700];
+                            break;
+                          case "Low Risk":
+                            ulcer = Colors.yellow[400];
+                            font = Colors.black;
+                            break;
+                          case "Severe Risk":
+                            ulcer = Colors.red[700];
+                            break;
+                        }
+                      }
+                      return Container(
+                        margin: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: ulcer,
+                        ),
+                        height: 35,
+                        child: Center(
+                          child: Text(
+                            "${_recognitions[index]}",
+                            style: TextStyle(color: font),
+                          ),
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const Divider()),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -348,7 +357,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                     primary: Colors.indigo[400],
                   ),
                   onPressed: () {
-                    if (records != null) {
+                    if (_record != null) {
                       Navigator.of(context).pushNamed('/records');
                     } else {
                       print("Not working");

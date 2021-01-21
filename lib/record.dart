@@ -56,9 +56,8 @@ class _UserRecordsState extends State<UserRecords> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-            child: Container(
-                margin: EdgeInsets.only(right: 40), child: Text("Records"))),
+        centerTitle: true,
+        title: Text("Records"),
         backgroundColor: Colors.indigo[400],
       ),
       body: SafeArea(

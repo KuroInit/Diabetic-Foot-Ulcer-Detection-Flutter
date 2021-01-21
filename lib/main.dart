@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'record.dart';
 import 'package:intl/intl.dart';
 import 'detections.dart';
+import 'infopage.dart';
 import 'dart:io';
 
 void main() {
@@ -20,7 +21,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: TfliteHome(),
-      routes: {'/records': (_) => UserRecords()},
+      routes: {
+        '/records': (_) => UserRecords(),
+        '/infopage': (_) => InfoPage()
+      },
     );
   }
 }
@@ -175,6 +179,11 @@ class _TfliteHomeState extends State<TfliteHome> {
         centerTitle: true,
         elevation: 0,
         title: Text("Home"),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.info_outline_rounded),
+              onPressed: (() => {Navigator.of(context).pushNamed('/infopage')}))
+        ],
       ),
       body: SafeArea(
           child: Column(

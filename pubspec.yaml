@@ -46,7 +46,6 @@ flutter:
   assets:
     - assets/tflite/model.tflite
     - assets/tflite/labels.txt
-    - assets/dev/ash.jpg
     - assets/faq/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

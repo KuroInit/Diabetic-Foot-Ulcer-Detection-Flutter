@@ -136,7 +136,7 @@ class _TfliteHomeState extends State<TfliteHome> {
     recog
         .map((e) => {
               if (e["confidenceInClass"] >
-                  0.70) //Change this value to increase sensitivity
+                  0.40) //Change this value to increase sensitivity
                 {
                   saveToList.add(e["detectedClass"]),
                   saveToList.add(
@@ -145,7 +145,7 @@ class _TfliteHomeState extends State<TfliteHome> {
                 }
             })
         .toList();
-
+    print(recog);
     if (saveToList == null || saveToList.length == 0) {
       return errList;
     }
